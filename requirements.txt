@@ -1,0 +1,3 @@
+colorama==0.4.6
+marcelbroccoli @ https://github.com/chemage/marcelbroccoli/archive/refs/tags/1.5.0.tar.gz#sha256=191cc98bda8813c63485fcfc73e48b417728114861b9d2135e3fc7f84ffcfaeb
+python-dotenv==1.0.1
