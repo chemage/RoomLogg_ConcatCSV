@@ -8,7 +8,7 @@ from __future__ import print_function
 import sys, os
 import logging
 import argparse
-import csv
+import csv, glob
 
 # pip modules
 
@@ -30,8 +30,8 @@ logger = logging.getLogger(__file__)
 
 # command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-s', '--source-csv', type=str, nargs='+', help='Source CSV file(s) to read from')
-parser.add_argument('-d', '--destination-csv', type=str, help='Destination CSV file to write to')
+parser.add_argument('-s', '--source-csv', type=str, nargs='+', required=True, help='Source CSV file(s) to read from (supports wildcards)')
+parser.add_argument('-d', '--destination-csv', type=str, required=True, help='Destination CSV file to write to')
 parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: config.json).')
 parser.add_argument('-l', '--log-level', type=str, default=logging.ERROR, help='Log level for script execution.')
 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 	log_file = os.path.abspath(log_file)
 
 	# setup logger
-	errorcode += logger.configure(logfile=log_file, name=__name__, level=LOG_LEVEL, dtformat="%Y-%m-%d %H:%M:%S.%f")
+	errorcode += logger.configure(logfile=log_file, name=__name__, level=args.log_level, dtformat="%Y-%m-%d %H:%M:%S.%f")
 	
 	# start log
 	logger.info("Welcome to the CSV Concatenate Script.")
@@ -68,22 +68,31 @@ if __name__ == '__main__':
 	logger.debug("Log level: {}".format(marcellg.logger.level))
 
 	# check source
-	if len(args['source-csv']) < 2:
+	if len(args.source_csv) < 2:
 		logger.error("Error: there must be at least 2 source CSV files.")
 		errorcode += ERR_INSUFF_SRC
 
 	# proceed if no initial errors
 	if errorcode == marcelec.SUCCESS:
 		
-		# read file
-		with open('eggs.csv', dialect='excel') as csvfile:
-			csvsrc = csv.reader(csvfile, delimiter=',', quotechar='')
+		# read files
+		for src in args.source_csv:
+			room_id = os.path.basename(src)[6]
+			count = 0
+			with open(src) as csvfile:
+				csvsrc = csv.reader(csvfile, delimiter=',')
+				header = csvsrc.__next__()
+				header.append('RoomId')
+				
+				for row in csvsrc:
+					row.append(room_id)
+					print(row)
 
-		with open('eggs.csv', 'w', newline='') as csvfile:
-			csvdst = csv.writer(csvfile, delimiter=',', quotechar='', quoting=csv.QUOTE_MINIMAL)
-			for row in csvsrc:
-				logger.debug(', '.join(row))
-				csvdst.writerow(row)
+		# 	with open(args.destination_csv, 'w', newline='') as csvfile:
+		# 		csvdst = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+		# 		for row in csvsrc:
+		# 			logger.debug(', '.join(row))
+		# 			csvdst.writerow(row)
 
 	# end of script
 	logger.info("Script execution completed with exit code {}.".format(errorcode))
