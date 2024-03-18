@@ -74,25 +74,30 @@ if __name__ == '__main__':
 
 	# proceed if no initial errors
 	if errorcode == marcelec.SUCCESS:
-		
+		all = []
+
 		# read files
 		for src in args.source_csv:
 			room_id = os.path.basename(src)[6]
 			count = 0
 			with open(src) as csvfile:
-				csvsrc = csv.reader(csvfile, delimiter=',')
-				header = csvsrc.__next__()
-				header.append('RoomId')
-				
+				csvsrc = csv.DictReader(csvfile, delimiter=',')
+				fieldnames = csvsrc.fieldnames
+				fieldnames.append('RoomId')
 				for row in csvsrc:
-					row.append(room_id)
-					print(row)
+					row['RoomId'] = room_id
+					all.append(row)
 
-		# 	with open(args.destination_csv, 'w', newline='') as csvfile:
-		# 		csvdst = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-		# 		for row in csvsrc:
-		# 			logger.debug(', '.join(row))
-		# 			csvdst.writerow(row)
+		# print(all)
+		# sort
+		# sorted(all)
+
+		# write to new file
+		with open(args.destination_csv, 'w', newline='') as csvfile:
+			csvdst = csv.DictWriter(csvfile, delimiter=';', quoting=csv.QUOTE_ALL, fieldnames=fieldnames)
+			csvdst.writeheader()
+			for row in all:
+				csvdst.writerow(row)
 
 	# end of script
 	logger.info("Script execution completed with exit code {}.".format(errorcode))
