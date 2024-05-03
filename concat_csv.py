@@ -5,7 +5,7 @@
 
 # system modules
 from __future__ import print_function
-import sys, os
+import sys, os, pathlib
 import logging
 import argparse
 import csv, glob
@@ -32,8 +32,9 @@ logger = logging.getLogger(__file__)
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--source-csv', type=str, nargs='+', required=True, help='Source CSV file(s) to read from (supports wildcards)')
 parser.add_argument('-d', '--destination-csv', type=str, required=True, help='Destination CSV file to write to')
-parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: config.json).')
-parser.add_argument('-l', '--log-level', type=str, default=logging.ERROR, help='Log level for script execution.')
+# parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: %(default)s).')
+parser.add_argument('-ll', '--log-level', type=int, default=logging.INFO, help='Log level for script execution (default: %(default)i).')
+parser.add_argument('-lf', '--log-file', type=str, default=f'{os.path.basename(__file__)}.log', help='Log file (default: %(default)s).')
 
 
 '''
@@ -54,22 +55,21 @@ if __name__ == '__main__':
 	# load config file
 	# cfg = marcelfn.load_config_file(args.config_file)
 
-	# define log file
-	if 'LOG_FILE' in os.environ: log_file = os.environ['LOG_FILE']
-	else: log_file = 'clean_remote_folders_sms.log'
-	log_file = os.path.abspath(log_file)
-
 	# setup logger
+	log_file = args.log_file
 	errorcode += logger.configure(logfile=log_file, name=__name__, level=args.log_level, dtformat="%Y-%m-%d %H:%M:%S.%f")
 	
 	# start log
 	logger.info("Welcome to the CSV Concatenate Script.")
-	logger.info("Log file is '{}'".format(log_file))
-	logger.debug("Log level: {}".format(marcellg.logger.level))
+	logger.info(f"Log file is '{log_file}'")
+	logger.debug(f"Log level: {marcellg.logger.level}")
 
 	# check source
-	if len(args.source_csv) < 2:
+	source_csv_files = args.source_csv
+	if len(source_csv_files) < 2:
 		logger.error("Error: there must be at least 2 source CSV files.")
+		if type(source_csv_files) is list and glob.escape(source_csv_files[0]) != source_csv_files:
+			logger.info("Make sure that the file pattern matches your files with the 'ls' command.")
 		errorcode += ERR_INSUFF_SRC
 
 	# proceed if no initial errors
@@ -77,22 +77,33 @@ if __name__ == '__main__':
 		all = []
 
 		# read files
-		for src in args.source_csv:
+		for src in source_csv_files:
 			room_id = os.path.basename(src)[6]
 			count = 0
+			logger.debug(f"Processing file '{src}'.")
 			with open(src) as csvfile:
-				csvsrc = csv.DictReader(csvfile, delimiter=',')
-				fieldnames = csvsrc.fieldnames
-				fieldnames.append('RoomId')
-				for row in csvsrc:
-					row['RoomId'] = room_id
-					all.append(row)
+				try:
+					csvsrc = csv.DictReader(csvfile, delimiter=',')
+					# fieldnames = csvsrc.fieldnames
+					# fieldnames.append('RoomId')
+					for row in csvsrc:
+						# skip existing records
+						item = next((item for item in all if item['datetime'] == row['Time']), None)
+						if item:
+							item['temp_'+room_id] = row['Temperature(C)']
+						else:
+							data = {'datetime': row['Time'], 'temp_'+room_id: row['Temperature(C)']}
+							all.append(data)
+						# row['RoomId'] = room_id
+				except Exception as e:
+					logger.warn(f"Unable to read file '{src}'. Skipping file.")
 
 		# print(all)
 		# sort
 		# sorted(all)
 
 		# write to new file
+		fieldnames = ['datetime', 'temp_1', 'temp_2', 'temp_3', 'temp_4', 'temp_5']
 		with open(args.destination_csv, 'w', newline='') as csvfile:
 			csvdst = csv.DictWriter(csvfile, delimiter=';', quoting=csv.QUOTE_ALL, fieldnames=fieldnames)
 			csvdst.writeheader()
