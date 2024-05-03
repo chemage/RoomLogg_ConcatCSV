@@ -1,13 +1,15 @@
 colorama==0.4.6
 contourpy==1.2.1
 cycler==0.12.1
+et-xmlfile==1.1.0
 fonttools==4.50.0
 kiwisolver==1.4.5
-marcelbroccoli @ https://github.com/chemage/marcelbroccoli/archive/refs/tags/1.6.1.zip
+marcelbroccoli @ https://github.com/chemage/marcelbroccoli/archive/refs/tags/1.6.1.zip#sha256=4d034f4d7161ddd3a7a3301d07ce1d50e918d3d4797f6d8d6a05ada5fa79f5d3
 matplotlib==3.8.4
 numpy==1.26.4
+openpyxl==3.1.2
 packaging==24.0
-pandas==2.2.1
+pandas==2.2.2
 pillow==10.3.0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
