@@ -1,16 +1,16 @@
 #!.venv/bin/python
-# file : concat_csv.py
-# Concatenate CSV of the same format
+# file : consolidate_raw_data.py
+# Transform RoomLogg PRO CSV data to Excel keeping only temperatures.
 # requires python >= 3.10
 
 # system modules
-from __future__ import print_function
 import sys, os, pathlib
 import logging
 import argparse
-import csv, glob
+import glob
 
 # pip modules
+import pandas as pd
 
 # custom modules
 import marcelbroccoli.errorcodes as marcelec
@@ -19,7 +19,7 @@ import marcelbroccoli.logger as marcellg
 
 # meta definitions
 __author__ = "Marcel Gerber"
-__date__ = "2024-03-17"
+__date__ = "2024-05-03"
 
 # custom error codes
 errorcode = marcelec.SUCCESS
@@ -31,7 +31,8 @@ logger = logging.getLogger(__file__)
 # command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--source-csv', type=str, nargs='+', required=True, help='Source CSV file(s) to read from (supports wildcards)')
-parser.add_argument('-d', '--destination-csv', type=str, required=True, help='Destination CSV file to write to')
+parser.add_argument('-d', '--destination', type=str, required=True, help='Destination file to write to')
+parser.add_argument('-ns', '--num-sensors', type=int, choices=range(1, 8), default=5, help='Number of sensors (default: %(default)i).')
 # parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: %(default)s).')
 parser.add_argument('-ll', '--log-level', type=int, default=logging.INFO, help='Log level for script execution (default: %(default)i).')
 parser.add_argument('-lf', '--log-file', type=str, default=f'{os.path.basename(__file__)}.log', help='Log file (default: %(default)s).')
@@ -74,41 +75,48 @@ if __name__ == '__main__':
 
 	# proceed if no initial errors
 	if errorcode == marcelec.SUCCESS:
-		all = []
+		fieldnames = ['DateTime']
+		for i in range(1, args.num_sensors): fieldnames.append(f"Temp_{i}")
+		pd_all = pd.DataFrame(columns=fieldnames)
 
 		# read files
 		for src in source_csv_files:
 			room_id = os.path.basename(src)[6]
 			count = 0
 			logger.debug(f"Processing file '{src}'.")
-			with open(src) as csvfile:
+
+			pd_src = pd.read_csv(src, sep=',')
+					
+			for row in pd_src.iterrows():
 				try:
-					csvsrc = csv.DictReader(csvfile, delimiter=',')
-					# fieldnames = csvsrc.fieldnames
-					# fieldnames.append('RoomId')
-					for row in csvsrc:
-						# skip existing records
-						item = next((item for item in all if item['datetime'] == row['Time']), None)
-						if item:
-							item['temp_'+room_id] = row['Temperature(C)']
-						else:
-							data = {'datetime': row['Time'], 'temp_'+room_id: row['Temperature(C)']}
-							all.append(data)
-						# row['RoomId'] = room_id
+					# skip existing records
+					# item = next((item for item in all if item['datetime'] == row['Time']), None)
+					print(row)
+					item = pd_all.loc[pd_all['DateTime'] == row['Time']]
+					if item:
+						item['temp_'+room_id] = row['Temperature(C)']
+					else:
+						data = {'DateTime': row['Time'], 'temp_'+room_id: row['Temperature(C)']}
+						pd_all.add(data)
+					# row['RoomId'] = room_id
 				except Exception as e:
-					logger.warn(f"Unable to read file '{src}'. Skipping file.")
+					logger.warn(f"Unable to read file '{src}'. Skipping file. {e}")
+					raise(e)
+
+		pd_all.to_excel(args.destination, sheet_name='RoomLogg PRO')
 
 		# print(all)
 		# sort
 		# sorted(all)
 
 		# write to new file
-		fieldnames = ['datetime', 'temp_1', 'temp_2', 'temp_3', 'temp_4', 'temp_5']
-		with open(args.destination_csv, 'w', newline='') as csvfile:
-			csvdst = csv.DictWriter(csvfile, delimiter=';', quoting=csv.QUOTE_ALL, fieldnames=fieldnames)
-			csvdst.writeheader()
-			for row in all:
-				csvdst.writerow(row)
+		# fieldnames = ['datetime', 'temp_1', 'temp_2', 'temp_3', 'temp_4', 'temp_5']
+
+		# with open(args.destination_csv, 'w', newline='') as csvfile:
+		# 	csvdst = csv.DictWriter(csvfile, delimiter=';', quoting=csv.QUOTE_ALL, fieldnames=fieldnamess)
+		# 	csvdst.writeheader()
+		# 	for row in all:
+		# 		csvdst.writerow(row)
 
 	# end of script
 	logger.info("Script execution completed with exit code {}.".format(errorcode))
