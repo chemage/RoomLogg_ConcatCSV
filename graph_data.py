@@ -8,47 +8,43 @@
 import os
 import matplotlib.pyplot as plt
 import csv
+import pandas as pd
 from datetime import datetime
 
-# Read data from CSV file
-data_file = "/home/mgerber/Documents/Appart/RoomLogg/all.csv"
+# variables
+data_file = "/home/mgerber/Documents/Appart/RoomLogg/all.xlsx"
+num_sensors = 5
 
-dates = []
-temps = [[] for _ in range(5)]
-
-count_errors = 0
-with open(data_file, 'r') as file:
-	reader = csv.reader(file)
-	next(reader)  # Skip header
-	for row in reader:
-		dates.append(datetime.strptime(row[0], "%Y/%m/%d %H:%M"))
-		for i in range(5):
-			try:
-				temps[i].append(float(row[i + 1]))
-			except ValueError as ve:
-				count_errors += 1
-				# print(f"Error at line number {reader.line_num}. {ve}")
-
-# show errors found in file
-print(f"Found {count_errors} errors in CSV file.")
+# read data file
+temps = {}
+for i in range(1, num_sensors+1):
+	print(f"Read room ID {i}.")
+	columns = ['DateTime', f"Temp_{i}"]
+	temps[i] = pd.read_excel(data_file, usecols=columns)
 
 # Plot data
 plt.figure(figsize=(10, 6))
-plt.plot(dates, temps[0], label='temp_1')
-plt.plot(dates, temps[1], label='temp_2')
-plt.plot(dates, temps[2], label='temp_3')
-plt.plot(dates, temps[3], label='temp_4')
-plt.plot(dates, temps[4], label='temp_5')
+for i in range(1, num_sensors+1):
+	print(f"Plot room ID {i}.")
+	plt.plot(temps[i]['DateTime'], temps[i][f"Temp_{i}"], label=f'temp_{i}')
+
+# plt.plot(dates, temps[1], label='temp_2')
+# plt.plot(dates, temps[2], label='temp_3')
+# plt.plot(dates, temps[3], label='temp_4')
+# plt.plot(dates, temps[4], label='temp_5')
 
 # Add labels and legend
+print("Add plot legends and labels.")
 plt.xlabel('Date and Time')
 plt.ylabel('Temperature (°C)')
 plt.title('Temperature Data')
 plt.legend()
 
 # Rotate x-axis labels for better readability
+print("Rotate graph.")
 plt.xticks(rotation=45)
 
 # Show plot
+print("Show plot.")
 plt.tight_layout()
 plt.show()
