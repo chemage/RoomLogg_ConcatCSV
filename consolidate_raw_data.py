@@ -45,6 +45,8 @@ if __name__ == '__main__':
 
 	# parse command-line arguments
 	args = parser.parse_args()
+	num_sensors = args.num_sensors
+	dest_file = args.destination
   
 	# set working dir
 	working_dir = os.path.abspath(os.path.dirname(__file__))
@@ -59,7 +61,7 @@ if __name__ == '__main__':
 	# setup logger
 	log_file = args.log_file
 	errorcode += logger.configure(logfile=log_file, name=__name__, level=args.log_level, dtformat="%Y-%m-%d %H:%M:%S.%f")
-	
+
 	# start log
 	logger.info("Welcome to the CSV Concatenate Script.")
 	logger.info(f"Log file is '{log_file}'")
@@ -76,47 +78,33 @@ if __name__ == '__main__':
 	# proceed if no initial errors
 	if errorcode == marcelec.SUCCESS:
 		fieldnames = ['DateTime']
-		for i in range(1, args.num_sensors): fieldnames.append(f"Temp_{i}")
-		pd_all = pd.DataFrame(columns=fieldnames)
+		for i in range(1, num_sensors+1): fieldnames.append(f"Temp_{i}")
+		df_all = pd.DataFrame(columns=['DateTime'])
 
-		# read files
+		# read source files
+		dict_df = {}
 		for src in source_csv_files:
+			logger.info(f"Processing file '{src}'.")
 			room_id = os.path.basename(src)[6]
 			count = 0
-			logger.debug(f"Processing file '{src}'.")
+			dict_df[room_id] = pd.read_csv(src, sep=',', header=0, names={
+					"DateTime": "Time", 
+					f"Temp_{room_id}": "Temperature(C)", 
+					f"Humidity_{room_id}": "Humidity(%)", 
+					f"Dewpoint_{room_id}": "Dewpoint(C)", 
+					f"HeatIndex_{room_id}": "HeatIndex(C)"
+				})
 
-			pd_src = pd.read_csv(src, sep=',')
-					
-			for row in pd_src.iterrows():
-				try:
-					# skip existing records
-					# item = next((item for item in all if item['datetime'] == row['Time']), None)
-					print(row)
-					item = pd_all.loc[pd_all['DateTime'] == row['Time']]
-					if item:
-						item['temp_'+room_id] = row['Temperature(C)']
-					else:
-						data = {'DateTime': row['Time'], 'temp_'+room_id: row['Temperature(C)']}
-						pd_all.add(data)
-					# row['RoomId'] = room_id
-				except Exception as e:
-					logger.warn(f"Unable to read file '{src}'. Skipping file. {e}")
-					raise(e)
-
-		pd_all.to_excel(args.destination, sheet_name='RoomLogg PRO')
-
-		# print(all)
-		# sort
-		# sorted(all)
-
-		# write to new file
-		# fieldnames = ['datetime', 'temp_1', 'temp_2', 'temp_3', 'temp_4', 'temp_5']
-
-		# with open(args.destination_csv, 'w', newline='') as csvfile:
-		# 	csvdst = csv.DictWriter(csvfile, delimiter=';', quoting=csv.QUOTE_ALL, fieldnames=fieldnamess)
-		# 	csvdst.writeheader()
-		# 	for row in all:
-		# 		csvdst.writerow(row)
+		# merge dataframes together
+		for i in range(1, num_sensors+1):
+			logger.info(f"Merging channel '{i}'.")
+			room_id = str(i)
+			# print(dict_df[room_id])
+			df_all = pd.merge(df_all, dict_df[room_id], on='DateTime', how='outer')
+		
+		# export to file
+		logger.info(f"Export to file '{dest_file}'.")
+		df_all.to_excel(dest_file, sheet_name='RoomLogg PRO', index=False)
 
 	# end of script
 	logger.info("Script execution completed with exit code {}.".format(errorcode))
