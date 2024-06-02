@@ -7,7 +7,7 @@ Set of script to consolidate data from RoomLogg PRO device and create plots.
 ## Scripts
 
 1. [consolidate_raw_data.py](consolidate_raw_data.md)
-1. [graph_data.py](graph_data.md)
+1. [graph_data.py](graph_data.md) (NOT implemented yet)
 
 ## Setup
 
