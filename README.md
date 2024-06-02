@@ -17,3 +17,11 @@ source .venv/bin/activate
 .venv/bin/python -m pip install pip --force
 pip install -r requirements.txt
 ```
+
+## Current Sensor Locations
+
+1. Living room
+1. Bedroom
+1. Kitchen
+1. Office
+1. Entry hall
