@@ -87,13 +87,17 @@ if __name__ == '__main__':
 			logger.info(f"Processing file '{src}'.")
 			room_id = os.path.basename(src)[6]
 			count = 0
-			dict_df[room_id] = pd.read_csv(src, sep=',', header=0, names={
+			pd_room = pd.read_csv(src, sep=',', header=0, names={
 					"DateTime": "Time", 
 					f"Temp_{room_id}": "Temperature(C)", 
 					f"Humidity_{room_id}": "Humidity(%)", 
 					f"Dewpoint_{room_id}": "Dewpoint(C)", 
 					f"HeatIndex_{room_id}": "HeatIndex(C)"
 				})
+			if room_id in dict_df:
+				dict_df[room_id] = pd.concat([dict_df[room_id], pd_room])
+			else:
+				dict_df[room_id] = pd_room
 
 		# merge dataframes together
 		for i in range(1, num_sensors+1):
