@@ -85,7 +85,7 @@ if __name__ == '__main__':
 		dict_df = {}
 		for src in source_csv_files:
 			logger.info(f"Processing file '{src}'.")
-			room_id = os.path.basename(src)[6]
+			room_id = int(os.path.basename(src)[5])
 			count = 0
 			try:
 				pd_room = pd.read_csv(src, sep=',', header=0, names={
@@ -112,19 +112,18 @@ if __name__ == '__main__':
 			dict_df[room_id].to_csv(dest_file, encoding='utf-8', index=False)
 
 		# merge dataframes together
-		# for i in range(1, num_sensors+1):
-		# 	logger.info(f"Merging channel '{i}'.")
-		# 	room_id = str(i)
-		# 	# print(dict_df[room_id])
-		# 	df_all = pd.merge(df_all, dict_df[room_id], on='DateTime', how='outer')
+		for room_id in range(1, num_sensors+1):
+			logger.info(f"Merging channel '{room_id}'.")
+			room_id = room_id
+			df_all = pd.merge(df_all, dict_df[room_id], on='DateTime', how='outer')
 		
 		# export to file
 		# dest_file = os.path.join(dest_path, "all.xlsx")
 		# logger.info(f"Export to file '{dest_file}'.")
 		# # df_all.to_excel(dest_file, sheet_name='RoomLogg PRO', index=False)
-		# dest_file = os.path.join(dest_path, "all.csv")
-		# logger.info(f"Export to file '{dest_file}'.")
-		# df_all.to_csv(dest_file, encoding='utf-8',index=False)
+		dest_file = os.path.join(dest_path, "all.csv")
+		logger.info(f"Export to file '{dest_file}'.")
+		df_all.to_csv(dest_file, encoding='utf-8',index=False)
 
 	# end of script
 	logger.info("Script execution completed with exit code {}.".format(errorcode))
