@@ -1,5 +1,5 @@
 #!.venv/bin/python
-# file : consolidate_raw_data.py
+# file : transform_raw_data.py
 # Transform RoomLogg PRO CSV data to Excel keeping only temperatures.
 # requires python >= 3.10
 
@@ -69,8 +69,8 @@ if __name__ == '__main__':
 
 	# check source
 	source_csv_files = args.source_csv
-	if len(source_csv_files) < 2:
-		logger.error("Error: there must be at least 2 source CSV files.")
+	if len(source_csv_files) < num_sensors:
+		logger.error("Error: there must be num_sensors source CSV files.")
 		if type(source_csv_files) is list and glob.escape(source_csv_files[0]) != source_csv_files:
 			logger.info("Make sure that the file pattern matches your files with the 'ls' command.")
 		errorcode += ERR_INSUFF_SRC
