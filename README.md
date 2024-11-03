@@ -25,4 +25,4 @@ pip install -r requirements.txt
 1. Bedroom
 1. Kitchen
 1. Office
-1. Entry hall
+1. Outdoor

@@ -49,7 +49,7 @@ This will show all debug logs.
 |Code|Description|
 |---|---|
 |0|SUCCESS|
-|1001|Not enough source files. At least 2 files are required|
+|1001|Not enough source files. At least x files are required (x depends on number of sensors)|
 
 ## CaveAts
 
