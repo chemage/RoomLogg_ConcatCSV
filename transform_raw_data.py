@@ -102,15 +102,6 @@ if __name__ == '__main__':
 			except Exception as e:
 				logger.error(f"Issue with row. {e}")
 
-		# clean data
-		for room_id in range(1, num_sensors+1):
-			# drop duplicates
-			dict_df[room_id].drop_duplicates()
-
-			# export to channel to file
-			dest_file = os.path.join(dest_path, f"{room_id}.csv")
-			dict_df[room_id].to_csv(dest_file, encoding='utf-8', index=False)
-
 		# merge dataframes together
 		for room_id in range(1, num_sensors+1):
 			logger.info(f"Merging channel '{room_id}'.")
