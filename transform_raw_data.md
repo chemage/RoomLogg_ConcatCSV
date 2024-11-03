@@ -22,7 +22,9 @@ the configuration file must look like this.
 
 ```json
 {
-	"rooms": {"1": "salon", "2": "chambre à coucher", "3": "cuisine", "4": "bureau", "5": "extérieur"}
+	"rooms": {"1": "salon", "2": "chambre à coucher", "3": "cuisine", "4": "bureau", "5": "extérieur"},
+	"num_sensors": 5,
+	"fieldnames": ["DateTime", "Temperature(C)", "Humidity(%)", "Dewpoint(C)", "HeatIndex(C)"]
 }
 ```
 

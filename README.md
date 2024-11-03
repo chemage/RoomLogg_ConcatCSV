@@ -8,7 +8,7 @@ Set of script to consolidate data from RoomLogg PRO device and create plots.
 
 1. [consolidate_raw_data.py](consolidate_raw_data.md): Consolidate all backups to CSV files per room.
 1. [transform_raw_data.py](transform_raw_data.md): Transform raw data into a single table and export it to a CSV file.
-1. [graph_data.py](graph_data.md) (NOT implemented yet)
+1. [graph_from_csv.py](graph_from_csv.md): Build a dynamic plot using plotly.
 
 ## Setup
 
