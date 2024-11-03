@@ -16,11 +16,22 @@ Copy CSV files as is.
 
 Check that files are not corrupt, which can happen if the card was used before.
 
+### Configuration File
+
+the configuration file must look like this.
+
+```json
+{
+	"rooms": {"1": "salon", "2": "chambre à coucher", "3": "cuisine", "4": "bureau", "5": "extérieur"}
+}
+```
+
 ## Script Usage
 
 ```shell
 $ python3 transform_raw_data.py -h
-usage: transform_raw_data.py [-h] -s SOURCE_CSV [SOURCE_CSV ...] -d DESTINATION [-ns {1,2,3,4,5,6,7}] [-ll LOG_LEVEL] [-lf LOG_FILE]
+usage: transform_raw_data.py [-h] -s SOURCE_CSV [SOURCE_CSV ...] -d DESTINATION [-ns {1,2,3,4,5,6,7}] [-c CONFIG_FILE] [-ll LOG_LEVEL]
+                             [-lf LOG_FILE]
 
 options:
   -h, --help            show this help message and exit
@@ -30,10 +41,12 @@ options:
                         Destination folder to write to
   -ns {1,2,3,4,5,6,7}, --num-sensors {1,2,3,4,5,6,7}
                         Number of sensors (default: 5).
+  -c CONFIG_FILE, --config-file CONFIG_FILE
+                        Configuration file (default: config.json).
   -ll LOG_LEVEL, --log-level LOG_LEVEL
                         Log level for script execution (default: 20).
   -lf LOG_FILE, --log-file LOG_FILE
-                        Log file (default: consolidate_raw_data.py.log).
+                        Log file (default: transform_raw_data.py.log).
 ```
 
 ### Example 1

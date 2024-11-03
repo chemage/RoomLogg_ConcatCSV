@@ -14,7 +14,7 @@ import pandas as pd
 
 # custom modules
 import marcelbroccoli.errorcodes as marcelec
-import marcelbroccoli.functions as marcelfn
+import marcelbroccoli.config as marcelcf
 import marcelbroccoli.logger as marcellg
 
 # meta definitions
@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--source-csv', type=str, nargs='+', required=True, help='Source CSV file(s) to read from (supports wildcards)')
 parser.add_argument('-d', '--destination', type=str, required=True, help='Destination folder to write to')
 parser.add_argument('-ns', '--num-sensors', type=int, choices=range(1, 8), default=5, help='Number of sensors (default: %(default)i).')
-# parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: %(default)s).')
+parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: %(default)s).')
 parser.add_argument('-ll', '--log-level', type=int, default=logging.INFO, help='Log level for script execution (default: %(default)i).')
 parser.add_argument('-lf', '--log-file', type=str, default=f'{os.path.basename(__file__)}.log', help='Log file (default: %(default)s).')
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	# errorcode += marcelfn.load_env()
 
 	# load config file
-	# cfg = marcelfn.load_config_file(args.config_file)
+	cfg = marcelcf.load_config_file(args.config_file)
 
 	# setup logger
 	log_file = args.log_file
@@ -86,14 +86,15 @@ if __name__ == '__main__':
 		for src in source_csv_files:
 			logger.info(f"Processing file '{src}'.")
 			room_id = int(os.path.basename(src)[5])
+			room_name = cfg['rooms'][str(room_id)]
 			count = 0
 			try:
 				pd_room = pd.read_csv(src, sep=',', header=0, names={
 						"DateTime": "Time", 
-						f"Temp_{room_id}": "Temperature(C)", 
-						f"Humidity_{room_id}": "Humidity(%)", 
-						f"Dewpoint_{room_id}": "Dewpoint(C)", 
-						f"HeatIndex_{room_id}": "HeatIndex(C)"
+						f"Temp_{room_name}": "Temperature(C)", 
+						f"Humidity_{room_name}": "Humidity(%)", 
+						f"Dewpoint_{room_name}": "Dewpoint(C)", 
+						f"HeatIndex_{room_name}": "HeatIndex(C)"
 					})
 				if room_id in dict_df:
 					dict_df[room_id] = pd.concat([dict_df[room_id], pd_room])
