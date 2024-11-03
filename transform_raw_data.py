@@ -31,7 +31,7 @@ logger = logging.getLogger(__file__)
 # command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--source-csv', type=str, nargs='+', required=True, help='Source CSV file(s) to read from (supports wildcards)')
-parser.add_argument('-d', '--destination', type=str, required=True, help='Destination file to write to')
+parser.add_argument('-d', '--destination', type=str, required=True, help='Destination folder to write to')
 parser.add_argument('-ns', '--num-sensors', type=int, choices=range(1, 8), default=5, help='Number of sensors (default: %(default)i).')
 # parser.add_argument('-c', '--config-file', type=str, default='config.json', help='Configuration file (default: %(default)s).')
 parser.add_argument('-ll', '--log-level', type=int, default=logging.INFO, help='Log level for script execution (default: %(default)i).')
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 	# parse command-line arguments
 	args = parser.parse_args()
 	num_sensors = args.num_sensors
-	dest_file = args.destination
+	dest_path = args.destination
   
 	# set working dir
 	working_dir = os.path.abspath(os.path.dirname(__file__))
@@ -87,28 +87,44 @@ if __name__ == '__main__':
 			logger.info(f"Processing file '{src}'.")
 			room_id = os.path.basename(src)[6]
 			count = 0
-			pd_room = pd.read_csv(src, sep=',', header=0, names={
-					"DateTime": "Time", 
-					f"Temp_{room_id}": "Temperature(C)", 
-					f"Humidity_{room_id}": "Humidity(%)", 
-					f"Dewpoint_{room_id}": "Dewpoint(C)", 
-					f"HeatIndex_{room_id}": "HeatIndex(C)"
-				})
-			if room_id in dict_df:
-				dict_df[room_id] = pd.concat([dict_df[room_id], pd_room])
-			else:
-				dict_df[room_id] = pd_room
+			try:
+				pd_room = pd.read_csv(src, sep=',', header=0, names={
+						"DateTime": "Time", 
+						f"Temp_{room_id}": "Temperature(C)", 
+						f"Humidity_{room_id}": "Humidity(%)", 
+						f"Dewpoint_{room_id}": "Dewpoint(C)", 
+						f"HeatIndex_{room_id}": "HeatIndex(C)"
+					})
+				if room_id in dict_df:
+					dict_df[room_id] = pd.concat([dict_df[room_id], pd_room])
+				else:
+					dict_df[room_id] = pd_room
+			except Exception as e:
+				logger.error(f"Issue with row. {e}")
+
+		# clean data
+		for room_id in range(1, num_sensors+1):
+			# drop duplicates
+			dict_df[room_id].drop_duplicates()
+
+			# export to channel to file
+			dest_file = os.path.join(dest_path, f"{room_id}.csv")
+			dict_df[room_id].to_csv(dest_file, encoding='utf-8', index=False)
 
 		# merge dataframes together
-		for i in range(1, num_sensors+1):
-			logger.info(f"Merging channel '{i}'.")
-			room_id = str(i)
-			# print(dict_df[room_id])
-			df_all = pd.merge(df_all, dict_df[room_id], on='DateTime', how='outer')
+		# for i in range(1, num_sensors+1):
+		# 	logger.info(f"Merging channel '{i}'.")
+		# 	room_id = str(i)
+		# 	# print(dict_df[room_id])
+		# 	df_all = pd.merge(df_all, dict_df[room_id], on='DateTime', how='outer')
 		
 		# export to file
-		logger.info(f"Export to file '{dest_file}'.")
-		df_all.to_excel(dest_file, sheet_name='RoomLogg PRO', index=False)
+		# dest_file = os.path.join(dest_path, "all.xlsx")
+		# logger.info(f"Export to file '{dest_file}'.")
+		# # df_all.to_excel(dest_file, sheet_name='RoomLogg PRO', index=False)
+		# dest_file = os.path.join(dest_path, "all.csv")
+		# logger.info(f"Export to file '{dest_file}'.")
+		# df_all.to_csv(dest_file, encoding='utf-8',index=False)
 
 	# end of script
 	logger.info("Script execution completed with exit code {}.".format(errorcode))
