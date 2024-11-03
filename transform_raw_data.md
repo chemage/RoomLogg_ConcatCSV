@@ -41,7 +41,7 @@ options:
 This will show all debug logs.
 
 ```shell
-python3 transform_raw_data.py -s ~/Documents/Appart/RoomLogg/2*/*.CSV -d ~/Documents/Appart/RoomLogg/all.xlsx -ll 0
+.venv/bin/python ./transform_raw_data.py -s ~/Documents/Appart/RoomLogg/2024_ALL/room_?.csv -d ~/Documents/Appart/RoomLogg/2024_ALL/ -ll 0
 ```
 
 ## Exit Codes
@@ -60,7 +60,7 @@ When using a wildcard pattern which doesn't match, there is no specific error.
 This example does not match if the files are *.CSV.
 
 ```shell
-python3 transform_raw_data.py -s ~/Documents/Appart/RoomLogg/2*/*.csv -d ~/Documents/Appart/RoomLogg/all.xlsx
+.venv/bin/python ./transform_raw_data.py -s ~/Documents/Appart/RoomLogg/2024_ALL/room_?.csv -d ~/Documents/Appart/RoomLogg/2024_ALL/
 ```
 
 The output will read as follows.
@@ -70,7 +70,7 @@ $ python3 transform_raw_data.py -s ~/Documents/Appart/RoomLogg/2*/*.csv -d all.x
 -------------------------------------------------------------------------------
 Welcome to the CSV Concatenate Script.
 Log file is 'transform_raw_data.py.log'
-Error: there must be at least 2 source CSV files.
+Error: there must be at least 5 source CSV files.
 Make sure that the file pattern matches your files with the 'ls' command.
 Script execution completed with exit code 1001.
 ```
