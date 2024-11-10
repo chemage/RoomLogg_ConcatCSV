@@ -41,7 +41,7 @@ options:
 This will show all debug logs.
 
 ```shell
-$ .venv/bin/python graph_from_csv.py -s ~/Documents/Appart/RoomLogg/2024_ALL/room_?.csv -ll 0
+.venv/bin/python graph_from_csv.py -s ~/Documents/Appart/RoomLogg/2024_ALL/room_?.csv
 ```
 
 ## Exit Codes
