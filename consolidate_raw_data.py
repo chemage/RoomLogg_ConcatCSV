@@ -77,8 +77,6 @@ if __name__ == '__main__':
 
 	# proceed if no initial errors
 	if errorcode == marcelec.SUCCESS:
-		fieldnames = ['DateTime']
-		for i in range(1, num_sensors+1): fieldnames.append(f"Temp_{i}")
 		df_all = pd.DataFrame(columns=['DateTime'])
 
 		# read source files
