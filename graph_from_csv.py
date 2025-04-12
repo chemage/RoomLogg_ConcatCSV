@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
 	# define log file
 	if 'LOG_FILE' in os.environ: log_file = os.environ['LOG_FILE']
-	else: log_file = 'clean_remote_folders_sms.log'
+	else: log_file = f'{__file__}.log'
 	log_file = os.path.abspath(log_file)
 
 	# setup logger
